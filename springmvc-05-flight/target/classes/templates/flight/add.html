@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8"></meta>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+<meta name="viewport" content="width=device-width, initial-scale=1"></meta>
+<title>添加航班</title>
+<link th:href="@{/bootstrap/css/bootstrap.min.css}" rel="stylesheet"></link>
+<link th:href="@{/js/daterangepicker/daterangepicker.css}" rel="stylesheet"></link>
+
+</head>
+<body>
+	<form id="addForm" th:action="@{/flight/add}" class="form-horizontal" method='post'
+		
+	 enctype="multipart/form-data" role="form">
+		
+		<!-- 航班编号 -->
+		<div class="form-group">
+			<label for="flightNo" class="col-sm-2 control-label">航班编号</label>
+			<div class="col-sm-4 input-group">
+				<input id="flightNo" name="flightNo" type="text" class="form-control" placeholder="航班编号">
+			</div>
+		</div>
+		
+		<!-- 机型 -->
+		<div class="form-group">
+			<label for="planeType" class="col-sm-2 control-label">机型</label>
+			<div class="col-sm-4 input-group">
+				<select id="planeType" name="planeType" class="form-control">
+					<option value="">--请选择--</option>
+				</select>
+			</div>
+		</div>
+		<!-- 航空公司 -->
+		<div class="form-group">
+			<label for="airline" class="col-sm-2 control-label">航空公司</label>
+			<div class="col-sm-4 input-group">
+				<select id="airline" name="airline" class="form-control">
+					<option value="">--请选择--</option>
+				</select>
+			</div>
+		</div>
+				
+		<!-- 出发城市 -->
+		<div class="form-group">
+			<label for="departureCity" class="col-sm-2 control-label">出发城市</label>
+			<div class="col-sm-4 input-group" >
+				<input id="departureCity" name="departureCity" type="text" class="form-control" 
+				placeholder="出发城市">
+			</div>
+		</div>		
+		
+		<!-- 到达城市 -->
+		<div class="form-group">
+			<label for="arriveCity" class="col-sm-2 control-label">到达城市</label>
+			<div class="col-sm-4 input-group">
+				<input id="arriveCity" name="arriveCity" type="text" class="form-control" 
+				placeholder="到达城市">
+			</div>
+		</div>
+	
+		<!-- 出发时间-到达时间 -->
+		<div class="form-group">
+	        <label for="time" class="col-sm-2 control-label">出发时间-到达时间</label>
+	        <div id="time-div" class="col-sm-4 input-group">
+	            <input type="text" name="time" id="time" class="form-control" >
+	        </div>
+	     </div>	
+		 <input type="hidden" id="departureDate" name="departureDate" class="form-control" />
+	     <input type="hidden" id="arriveDate" name="arriveDate" class="form-control" />
+		
+		<!-- 里程 -->
+		<div class="form-group">
+			<label for="mileage" class="col-sm-2 control-label">里程</label>
+			<div class="col-sm-4 input-group">
+				<input id="mileage" name="mileage" type="text" class="form-control" 
+				placeholder="里程">
+			</div>
+		</div>
+		<!-- 班次 -->
+		<div class="form-group">
+			<label for="classes" class="col-sm-2 control-label">班次</label>
+			<div class="col-sm-4 input-group">
+				<input id="classes" name="classes" type="text" class="form-control" 
+				placeholder="班次">
+			</div>
+		</div>		
+		<!-- 票价 -->
+		<div class="form-group">
+			<label for="price" class="col-sm-2 control-label">票价</label>
+			<div class="col-sm-4 input-group">
+				<input id="price" name="price" type="text" class="form-control" 
+				placeholder="票价">
+			</div>
+		</div>
+		<!-- 订票数 -->
+		<div class="form-group">
+			<label for="ticketCount" class="col-sm-2 control-label">订票数</label>
+			<div class="col-sm-4 input-group">
+				<input id="ticketCount" name="ticketCount" type="text" class="form-control" 
+				placeholder="订票数">
+			</div>
+		</div>
+		
+		<div class="form-group">
+			<label for="file" class="col-sm-2 control-label">图片</label>
+			<div class="col-sm-4 input-group">
+				<input id="file" name="file" type="file" class="form-control" 
+				placeholder="图片">
+			</div>
+		</div>
+		
+		<div class="form-group">
+			<div class="col-sm-offset-2 col-sm-10">
+				<button type="submit" class="btn btn-primary">添加</button>
+			</div>
+		</div>
+	</form>
+
+	<script th:src="@{/js/jquery/jquery.min.js}"></script>
+	<script th:src="@{/bootstrap/js/bootstrap.min.js}"></script>
+	<script th:src="@{/js/jquery/jquery.validate.js}"></script>
+	<script th:src="@{/js/daterangepicker/moment.min.js}"></script>
+    <script th:src="@{/js/daterangepicker/daterangepicker.js}"></script>
+	
+	<script th:inline="javascript" type="text/javascript">
+		 var contextPath=[[${#request.getContextPath()}]];
+		/*  var contextPath="http://192.168.43.184:8080/springmvc-05-flight"; */
+		$(function(){
+			ET.loadDict("planeType");
+			ET.loadDict("airline");
+			ET.datePicker();
+		})
+		var ET={
+			loadDict:function(groupId){
+				$.ajax({
+					url: contextPath+'/dict/'+groupId,
+					type: 'get',
+					data: '',
+					dataType: 'json',
+					success: function(data){
+						var options ='<option value="">--请选择--</option>';
+						for(var i in data){
+							var name = data[i].name;
+							var value = data[i].value;
+							options+="<option value='"+value+"'>"+name+"</option>"
+						}
+						$('#'+groupId).html(options);
+					}
+				})
+			},
+			datePicker: function() {
+				$('#time').daterangepicker({
+					autoUpdateInput: false,
+					minDate: moment(new Date()), //最小时间					
+					maxDate: moment().add(2, 'weeks'), // 最大时间
+					"timePicker": true, 
+					ranges: {
+					  '今天': [moment(), moment()],
+					  '明天': [moment().add(1, 'days'), moment().add(1, 'days')]
+					},
+					"locale": {
+				        "format": "YYYY-MM-DD",
+				        "separator": " ~ ",
+				        "applyLabel": "确认",
+				        "cancelLabel": "取消",
+				        "fromLabel": "从",
+				        "toLabel": "到",
+				        "customRangeLabel": "选择",
+				        "weekLabel": "W",
+				        "daysOfWeek": [
+				            "日",
+				            "一",
+				            "二",
+				            "三",
+				            "四",
+				            "五",
+				            "六"
+				        ],
+				        "monthNames": [
+				            "一月",
+				            "二月",
+				            "三月",
+				            "四月",
+				            "五月",
+				            "六月",
+				            "七月",
+				            "八月",
+				            "九月",
+				            "十月",
+				            "十一月",
+				            "十二月"
+				        ]
+				    },
+				}, function(start, end, label) {
+				  console.log('New date range selected: ' + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD') + ' (predefined range: ' + label + ')');
+				}).on('apply.daterangepicker',function(ev,picker){
+					$('#time').data('daterangepicker').autoUpdateInput = true;
+					$('#departureDate').val(picker.startDate.format('YYYY-MM-DD'));
+				    $('#arriveDate').val(picker.endDate.format('YYYY-MM-DD'));
+				    $('#time').val(picker.startDate.format('YYYY-MM-DD')+'~'+picker.endDate.format('YYYY-MM-DD'));
+				    $('div[id="time-div"] label').hide();
+				}).on('cancel.daterangepicker', function(ev, picker) {
+				    $('#time').val('');
+				    $('#departureDate').val('');
+				    $('#arriveDate').val('');
+				    $('div[id="time-div"] label').hide();
+				});
+			}
+		}
+		
+		$("#addForm").validate({
+			errorPlacement: function(error,element){
+				error.removeClass('glyphicon glyphicon-ok')
+				error.addClass('input-group-addon');
+				error.appendTo(element.parent());
+			},
+			success : function (label) {
+				label.addClass('input-group-addon');
+				label.addClass('success').text('ok');
+				/* label.addClass('glyphicon glyphicon-ok'); */
+			},
+			rules:{
+				flightNo:{
+					required:true,
+					maxlength:4,
+					remote:{//ajax校验, 校验航班号唯一性 返回值必须为true或false
+						url: contextPath+'/flight/flightNo',
+						type:'GET',
+						data:{
+							flightNo:function(){
+								return $('#flightNo').val();
+							}
+						}
+				
+					}
+				},
+				mileage:{
+					required:true,
+					min:50,
+				},
+				price:{
+					required:true,
+					positiveInt:true,
+				},
+				ticketCount:{
+					required:true,
+					positiveInt:true,
+				},
+				planeType:"required",
+				airline:"required",
+				time:"required",
+				
+			},
+			messages:{
+				flightNo:{
+					required:'航班编号不能为空',
+					maxlength:jQuery.format('航班编号长度不能大于{0}'),
+					remote:'航班号已存在',
+				},
+				mileage:{
+					required:'行程不能为空',
+					min:'输入值不能小于50',
+				},
+				price:{
+					required:'价格不能为空',
+					positiveInt:'价格必须为不为0的正整数'
+				},
+				ticketCount:{
+					required:'剩余票数不能为空',
+					positiveInt:'票数必须为正整数',
+				},
+				planeType:"机型必填",
+				airline:"公司必填",
+				time:"时间必填"
+			}
+		});
+		$.validator.addMethod('positiveInt', function(value, element) {
+			var reg =  /^\+?[1-9]\d*$/;
+			return this.optional(element) || (reg.test(value));
+		}, '只能输入大于0的正整数');
+		
+		
+	</script>
+	
+</body>
+</html>

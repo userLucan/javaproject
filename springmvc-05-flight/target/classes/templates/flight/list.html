@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8"></meta>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+<meta name="viewport" content="width=device-width, initial-scale=1"></meta>
+<title>添加航班</title>
+<link th:href="@{/bootstrap/css/bootstrap.min.css}" rel="stylesheet"></link>
+</head>
+<body>
+<!-- 查询 -->
+<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+  <div class="panel panel-primary">
+    <div class="panel-heading" role="tab" id="headingOne">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+          	查询区域
+        </a>
+      </h4>
+    </div>
+    <div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+      <div class="panel-body">
+        <form id="queryForm" class="form-horizontal" role="form">
+		
+			<!-- 机型 -->
+			<div class="form-group">
+				<label for="flightNo" class="col-sm-2 control-label">机型</label>
+				<div id="planeType" class="col-sm-10">
+				
+				</div>
+			</div>
+			<!-- 票价区间 -->
+			<div class="form-group">
+				<label for="flightNo" class="col-sm-2 control-label">票价区间</label>
+				<div id="price" class="col-sm-10">
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-offset-2 col-sm-10">
+					<button type="button" id="queryButton" class="btn btn-primary">查询</button>
+					<button type="reset" class="btn btn-success">重置</button>
+				</div>
+			</div>
+		</form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<table  class="table table-hover">
+	<thead>
+		<tr>
+			<td>航班编号</td>
+			<td>机型</td>
+			<td>出发城市-到达城市</td>
+			<td>出发时间-到达时间</td>
+			<td>里程</td>
+			<td>所属公司</td>
+			<td>班次</td>
+			<td>票价</td>
+			<td>订票容纳数</td>
+			<td>图片</td>
+			<td>操作</td>
+		</tr>
+	</thead>
+	<tbody id="data">
+	
+	</tbody>
+</table>
+<span id="summary"></span>
+	<select id="pageSize">
+		<option value="2">2</option>
+		<option value="5">5</option>
+		<option value="10">10</option>
+	</select>
+	<button id="first" class="btn btn-primary">首页</button>
+	<button id="pre" class="btn btn-success">上一页</button>
+	<button id="next" class="btn btn-danger">下一页</button>
+	<button id="last" class="btn btn-warnning">尾页</button>
+	
+	<form id="deleteForm" method="POST">
+		<input type="hidden" name="_method" value="delete"> 
+	</form>
+	
+	
+	
+	<!-- 编辑航班信息（ 航空公司下拉框、票价、容纳订票数） -->
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" id="myModalLabel">修改航班信息</h4>
+      </div>
+      <div class="modal-body">
+        <form id="updateForm" 
+			 method="post" 
+			 th:action="@{/flight/update}" class="form-horizontal" 
+			 role="form">
+		
+		<input type="hidden" name="id" id="flightId" />
+		<!-- 航班编号 -->
+		<div class="form-group">
+			<label for="flightNo" class="col-sm-2 control-label">航班编号</label>
+			<div class="col-sm-4 input-group">
+				<input id="flightNo" name="flightNo" disabled="disabled" type="text" class="form-control" placeholder="航班编号">
+			</div>
+		</div>
+		
+		<!-- 机型 -->
+		<div class="form-group">
+			<label for="edit-planeType" class="col-sm-2 control-label">机型</label>
+			<div class="col-sm-4 input-group">
+				<select id="edit-planeType" disabled="disabled" name="planeType" class="form-control">
+					<option value="">--请选择--</option>
+				</select>
+			</div>
+		</div>
+		<!-- 航空公司 -->
+		<div class="form-group">
+			<label for="airline" class="col-sm-2 control-label">航空公司</label>
+			<div class="col-sm-4 input-group">
+				<select id="airline" name="airline"  class="form-control">
+					<option value="">--请选择--</option>
+				</select>
+			</div>
+		</div>
+				
+		<!-- 出发城市 -->
+		<div class="form-group">
+			<label for="departureCity" class="col-sm-2 control-label">出发城市</label>
+			<div class="col-sm-4 input-group">
+				<input id="departureCity" disabled="disabled" name="departureCity" type="text" class="form-control" 
+				placeholder="出发城市">
+			</div>
+		</div>		
+		
+		<!-- 到达城市 -->
+		<div class="form-group">
+			<label for="arriveCity" class="col-sm-2 control-label">到达城市</label>
+			<div class="col-sm-4 input-group">
+				<input id="arriveCity" disabled="disabled" name="arriveCity" type="text" class="form-control" 
+				placeholder="到达城市">
+			</div>
+		</div>
+	
+		<!-- 出发时间-到达时间 -->
+		<div class="form-group">
+	        <label for="time" class="col-sm-2 control-label">出发时间-到达时间</label>
+	        <div id="time-div" class="col-sm-4 input-group">
+	            <input type="text" disabled="disabled" name="time" id="time" class="form-control" >
+	        </div>
+	     </div>
+		
+		<!-- 里程 -->
+		<div class="form-group">
+			<label for="mileage" class="col-sm-2 control-label">里程</label>
+			<div class="col-sm-4 input-group">
+				<input id="mileage" disabled="disabled" name="mileage" type="text" class="form-control" 
+				placeholder="里程">
+			</div>
+		</div>
+		<!-- 班次 -->
+		<div class="form-group">
+			<label for="classes" class="col-sm-2 control-label">班次</label>
+			<div class="col-sm-4 input-group">
+				<input id="classes" disabled="disabled" name="classes" type="text" class="form-control" 
+				placeholder="班次">
+			</div>
+		</div>		
+		<!-- 票价 -->
+		<div class="form-group">
+			<label for="edit-price" class="col-sm-2 control-label">票价</label>
+			<div class="col-sm-4 input-group">
+				<input id="edit-price" name="price" type="text" class="form-control" 
+				placeholder="票价">
+			</div>
+		</div>
+		<!-- 订票数 -->
+		<div class="form-group">
+			<label for="ticketCount" class="col-sm-2 control-label">订票数</label>
+			<div class="col-sm-4 input-group">
+				<input id="ticketCount" name="ticketCount" type="text" class="form-control" 
+				placeholder="订票数">
+			</div>
+		</div>
+		
+		<div class="form-group">
+			<div class="col-sm-offset-2 col-sm-10">
+				<button type="submit" class="btn btn-primary">添加</button>
+				<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+			</div>
+		</div>
+		</form>
+      </div>
+    </div>
+  </div>
+</div>
+
+	
+
+	<script th:src="@{/js/jquery/jquery.min.js}"></script>
+	<script th:src="@{/bootstrap/js/bootstrap.min.js}"></script>
+	<script th:src="@{/bootstrap/js/bootstrap-table.js}"></script>
+	<script th:src="@{/bootstrap/js/bootstrap-table-zh-CN.js}"></script>
+	<script th:inline="javascript" type="text/javascript">
+		var contextPath = [[${#request.getContextPath()}]];
+		var pre,next,last;
+		$(function(){
+			var et2 = new ET1904();
+			et2.loadSelectDict('planeType');
+			et2.loadSelectDict('airline');
+			//加载机型
+			et2.loadDict('planeType');
+			//加载价格区间
+			et2.loadDict('price');
+			et2.queryList(1);
+			
+			$('#queryButton').on('click', function(){
+				et2.queryList(1);
+			});
+			$('#first').on('click', function(){
+				et2.queryList(1);
+			});
+			$('#pre').on('click', function(){
+				et2.queryList(pre);
+			});
+			$('#next').on('click', function(){
+				et2.queryList(next);
+			});
+			$('#last').on('click', function(){
+				et2.queryList(last);
+			});
+			
+			$('#pageSize').on('change', function(){
+				et2.queryList(1,$("#pageSize").val());
+			});
+
+			
+		});
+		// 构造方法
+		function ET1904(){}
+		
+		ET1904.prototype.queryList = function(pageNum,pageSize){
+			var conditions = $('#queryForm').serialize();
+			var pageSize = pageSize || $("#pageSize").val();
+			conditions += '&pageNum='+pageNum+'&pageSize='+pageSize
+		 $.ajax({
+				url:contextPath + '/flight/list',
+				type:'get',
+				data:conditions,
+				dataType: 'JSON',
+				success: function(data){
+					 pre = data.pre;
+					next = data.next;
+					last = data.pageCount;
+					var trs = '';
+					$.each(data.rows,function(i,flight){
+						trs += '<tr>'
+							+ '<td>' +flight.flightNo +'</td>'
+							+ '<td>' +flight.planeTypeName +'</td>'
+							+ '<td>' +flight.departureArriveCity +'</td>'
+							+ '<td>' +flight.departureArriveDate +'</td>'
+							+ '<td>' +flight.mileageName +'</td>'
+							+ '<td>' +flight.airlineName +'</td>'
+							+ '<td>' +flight.classes +'</td>'
+							+ '<td>' +flight.priceName +'</td>'
+							+ '<td>' +flight.ticketCountName +'</td>'
+							+ '<td><img src='+contextPath+flight.savePath+' wideth="50px" height="50px" class="img-circle"></td>'
+							+ '<td>'
+							+ "<button onclick='editFlight("+JSON.stringify(flight)+")' type='button' class='btn btn-primary' data-toggle='modal' data-target='#myModal'>编辑</button>"
+							+'<button class="btn btn-danger" onclick="deleteFlight('+flight.id+')">删除</button>'
+							+'</td>'
+							+ '</tr>'
+					});
+					$('#data').html(trs);
+					$('#summary').html("当前是第"+data.pageNum+"页,总共"+data.pageCount+"页,总共"+data.total+"条");
+					
+					if(data.pageNum ==1){
+						$('#first').attr('disabled','disabled');
+						$('#pre').attr('disabled','disabled');
+					}else{
+						$('#first').removeAttr('disabled');
+						$('#pre').removeAttr('disabled');
+					}
+					
+					if(data.pageNum == data.pageCount){
+						$('#next').attr('disabled','disabled');
+						$('#last').attr('disabled','disabled');
+					}else{
+						$('#next').removeAttr('disabled');
+						$('#last').removeAttr('disabled');
+					}
+				}
+			});
+		}
+		ET1904.prototype.loadDict = function(groupId) {
+			var checkboxName = '';
+			if(groupId=='planeType'){
+				checkboxName = 'planeTypeList';
+			}else if(groupId=='price'){
+				checkboxName = 'priceList';
+			}
+			$.ajax({
+				url:contextPath+'/dict/'+groupId,
+				type:'GET',
+				data:'',
+				dataType:'JSON',
+				success:function(data){
+					var checkboxStr = '';
+					$.each(data,function(i,dict){
+						var showName = dict.name;
+						var value = dict.value;
+						checkboxStr += "<label class='checkbox-inline'><input type='checkbox' name='"+checkboxName+"' value='"+value+"'>"+showName+"</label>";
+					});
+					$('#'+groupId).append(checkboxStr);
+				}
+			});
+		}
+		  function deleteFlight (id){
+			var action= contextPath +'/flight/'+id;
+			if(confirm('确定要删除吗')) {
+				$("#deleteForm").attr('action',action).submit();
+			}
+		}
+		//加载机型和航空公司页面
+		  ET1904.prototype.loadSelectDict = function(groupId){
+			$.ajax({
+				url:contextPath+'/dict/'+groupId,
+				type:'GET',
+				data:'',
+				dataType:'JSON',
+				async:false,
+				success:function(data){
+					var options='';
+					$.each(data,function(i,dict){
+						options += "<option value='"+dict.value+"'>"+dict.name+"</option>"
+					});
+					if(groupId == 'planeType'){
+						$('#edit-planeType').append(options);
+					}else{
+						$('#'+groupId).append(options);
+					}
+				}
+			})
+		};
+		
+		function editFlight(flight){
+			$('#flightId').val(flight.id)
+			$('#flightNo').val(flight.flightNo);
+			$('#edit-planeType').val(flight.planeType);
+			$('#airline').val(flight.airline);
+			$('#departureCity').val(flight.departureCity);
+			$('#arriveCity').val(flight.arriveCity);
+			$('#time').val(flight.departureArriveDate);
+			$('#mileage').val(flight.mileage);
+			$('#classes').val(flight.classes);
+			$('#edit-price').val(flight.price);
+			$('#ticketCount').val(flight.ticketCount);
+		}
+	</script>
+</body>
+</html>

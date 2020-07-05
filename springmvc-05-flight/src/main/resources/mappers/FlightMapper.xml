@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.etoak.mapper.FlightMapper">
+	<select id="queryByFlightNo" parameterType="string" resultType="flight">
+		SELECT
+			id,
+			flight_no AS flightNo,
+			plane_type AS planeType,
+			airline,
+			departure_date AS departureDate,
+			departure_city AS departureCity,
+			arrive_date AS arriveDate,
+			arrive_city AS arriveCity,
+			mileage,
+			classes,
+			price,
+			ticket_count as ticketCount,
+			create_date  as createDate,
+			update_time  as updateTime
+			from t_springmvc_flight
+			where flight_no = #{flightNo}
+	</select>
+	<insert id="addFlight" parameterType="flight">
+		INSERT INTO t_springmvc_flight ( flight_no, plane_type, airline, departure_date, departure_city, arrive_date, arrive_city, mileage, classes, price, ticket_count, create_date,save_path )
+			VALUES
+		(#{flightNo},#{planeType},#{airline},#{departureDate},#{departureCity},#{arriveDate},#{arriveCity},#{mileage},#{classes},#{price},#{ticketCount},NOW(),#{savePath})
+	</insert>
+	<select id="queryList" parameterType="flightVo" resultType="flightVo">
+		SELECT
+			t.id,
+			t.flight_no AS flightNo,
+			t.plane_type AS planeType,
+			t.airline,
+			t.departure_date AS departureDate,
+			t.departure_city AS departureCity,
+			t.arrive_date AS arriveDate,
+			t.arrive_city AS arriveCity,
+			t.mileage,
+			t.classes,
+			t.price,
+			t.ticket_count AS ticketCount,
+			t.save_path AS savePath,
+			t.create_date AS createDate,
+			t.update_time AS updateTime,
+			t2.NAME AS planeTypeName,
+			t3.NAME AS airlineName,
+			CONCAT( t.departure_date, '~', t.arrive_date ) AS departureArriveDate,
+			CONCAT( t.departure_city, '~', t.arrive_city ) AS departureArriveCity,
+			CONCAT( t.mileage, 'KM' ) AS mileageName,
+			CONCAT(CONVERT(t.price,char),'元') AS priceName,
+  			CONCAT(CONVERT(t.ticket_count,char),'张') AS ticketCountName
+		FROM
+			t_springmvc_flight t
+			LEFT JOIN t_springmvc_dict t2 ON t.plane_type = t2.`value` 
+			AND t2.group_id = 'planeType'
+			LEFT JOIN t_springmvc_dict t3 ON t.airline = t3.`value`  
+			AND t3.group_id = 'airline' 
+			<where>
+  			<if test="planeTypeList!=null and planeTypeList.size() !=0">
+  				AND t.plane_type IN
+  				<foreach collection=" planeTypeList" item="item" open="(" close=")" separator=",">
+  					#{item}
+  				</foreach>
+  			</if>
+  			<if test="priceMapList !=null and priceMapList.size() !=0">
+  				AND 
+  				<foreach collection="priceMapList" item="priceMap" open="(" close=")" separator="OR">
+  					t.price BETWEEN #{priceMap.start} AND #{priceMap.end}
+  				</foreach>
+  			</if>	
+  		</where>
+  		ORDER BY t.create_date DESC
+	</select>
+	
+	<delete id="deleteById" parameterType="int">
+		delete from t_springmvc_flight where id = #{id}
+	</delete>
+	<update id="updateFlight" parameterType="flight" >
+		update t_springmvc_flight
+		set airline = #{airline},
+		price =#{price},
+		ticket_count = #{ticketCount}
+		where id = #{id}
+	</update>
+</mapper>
